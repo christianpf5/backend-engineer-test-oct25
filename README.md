@@ -1,15 +1,18 @@
 # StockSync CLI 
 
-Esta es una prueba técnica para la posición de Backend Engineer en Greenvase.es.
+Esta prueba técnica forma parte del proceso de selección para Backend Engineer en Greenvase.es.
+Tu tarea será diseñar y desarrollar una herramienta de línea de comandos (CLI) para sincronizar inventarios entre distintos sistemas.
 
 ## Objetivo
 
-Crear una herramienta de línea de comandos (CLI) que actualice automáticamente el inventario de productos entre sistemas:
+Construir una CLI capaz de sincronizar automáticamente el stock de productos desde un ERP interno hacia diferentes canales de venta:
 
 - **Origen**: ERP interno (100,000 productos)
 - **Destinos**: 
   - Greenvase.es (tienda online con WooCommerce)
   - Makro (marketplace para hostelería)
+
+El resultado debe ser una herramienta robusta, escalable y concurrente, que pueda operar sin inconsistencias al ejecutarse en paralelo.
 
 ## Instrucciones
 
@@ -19,9 +22,6 @@ Crear una herramienta de línea de comandos (CLI) que actualice automáticamente
 - Actualiza el README con los pasos necesarios para instalar, ejecutar y probar el proyecto
 - Si necesitas más de 4-5 horas, deja documentado donde te quedaste y qué habrías implementado con más tiempo
 - Incluye una sección con los requisitos pendientes para producción
-- ¡Buena suerte!
-
-
 
 ## Requisitos
 
@@ -34,7 +34,10 @@ Crear una herramienta de línea de comandos (CLI) que actualice automáticamente
   - Forzar que el producto aparezca siempre como fuera de stock en un canal de venta (WooCommerce o Makro).
   - Forzar que el producto tenga stock disponible aunque el ERP indique que no hay stock.
   - Definir un stock mínimo para el producto; si no se alcanza, marcarlo como fuera de stock.
-- Las especificaciones de las APIs se encuentran en el directorio `openapi`. Por conveniencia, hemos utilizado https://spotlight.io/ como servidor de pruebas para las APIs. Podras hacer request a las APIs con mock server en esta url https://greenvase.stoplight.io/docs/greenvase-test/9rlphke1phdj8-erp-system-api
+- Las definiciones de las APIs están disponibles en el directorio `openapi`. Para facilitar las pruebas, puedes utilizar el servidor mock proporcionado a través de https://spotlight.io/. Las APIs pueden consultarse usando la siguiente URL de mock server: https://greenvase.stoplight.io/docs/greenvase-test/9rlphke1phdj8-erp-system-api
 - No hace falta implementar la autenticación para las APIs.
+
+¡Buena suerte!
+
 
 
