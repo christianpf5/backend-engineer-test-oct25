@@ -4,17 +4,20 @@ Esta es una prueba técnica para la posición de Backend Engineer en Greenvase.e
 
 ## Objetivo
 
-Desarrollar un CLI que sincronice el stock de 100,000 productos desde nuestro ERP hacia los canales de venta:
-- **Greenvase.es**: ecommerce propio basado en WooCommerce
-- **Makro**: marketplace líder en el canal horeca con API propia
+Crear una herramienta de línea de comandos (CLI) que actualice automáticamente el inventario de productos entre sistemas:
+
+- **Origen**: ERP interno (100,000 productos)
+- **Destinos**: 
+  - Greenvase.es (tienda online con WooCommerce)
+  - Makro (marketplace para hostelería)
 
 ## Instrucciones
 
 - Haz un fork de este repositorio, implementa los requisitos y envíanos el enlace por correo electrónico
 - Puedes utilizar cualquier lenguaje de programación, framework o tecnología
 - Si algún requisito no es suficientemente claro, toma decisiones de negocio razonables y documéntalas en el README
-- Actualiza el README con los pasos necesarios para ejecutar el proyecto
-- Si necesitas más de 4-5 horas, documenta qué habrías implementado con más tiempo
+- Actualiza el README con los pasos necesarios para instalar, ejecutar y probar el proyecto
+- Si necesitas más de 4-5 horas, deja documentado donde te quedaste y qué habrías implementado con más tiempo
 - Incluye una sección con los requisitos pendientes para producción
 - ¡Buena suerte!
 
@@ -23,14 +26,15 @@ Desarrollar un CLI que sincronice el stock de 100,000 productos desde nuestro ER
 ## Requisitos
 
 - El comando de sincronización de stock debe permitir elegir si se sincroniza con Makro o con WooCommerce.
-- Debe ofrecer dos modos de funcionamiento: increme ntal y completo. En el modo incremental, solo se sincronizan los productos que han cambiado desde la última sincronización. En el modo completo, se sincronizan todos los productos.
+- Debe ofrecer dos modos de funcionamiento: incremental y completo. En el modo incremental, solo se sincronizan los productos que han cambiado desde la última sincronización. En el modo completo, se sincronizan todos los productos.
 - El CLI debe poder ejecutarse en varios procesos al mismo tiempo sin generar inconsistencias, permitiendo repartir la actualización de productos entre varios procesos sin que se solapen.
+- Usa el SKU como identificador único del producto.
 - Se deben definir reglas de negocio para decidir cómo actualizar el stock de cada producto o categoría. Estas reglas pueden aplicarse tanto a nivel de producto como de categoría. No todos los 100k productos tendrán reglas, serán muy pocas al principio. Las opciones disponibles para cada producto son:
   - Actualizar el stock real del producto según el ERP.
   - Forzar que el producto aparezca siempre como fuera de stock en un canal de venta (WooCommerce o Makro).
   - Forzar que el producto tenga stock disponible aunque el ERP indique que no hay stock.
   - Definir un stock mínimo para el producto; si no se alcanza, marcarlo como fuera de stock.
-
-
+- Las especificaciones de las APIs se encuentran en el directorio `openapi`. Por conveniencia, hemos utilizado https://spotlight.io/ como servidor de pruebas para las APIs. Podras hacer request a las APIs con mock server en esta url https://greenvase.stoplight.io/docs/greenvase-test/9rlphke1phdj8-erp-system-api
+- No hace falta implementar la autenticación para las APIs.
 
 
