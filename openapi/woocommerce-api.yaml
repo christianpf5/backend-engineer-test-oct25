@@ -1,0 +1,596 @@
+openapi: 3.0.3
+info:
+  title: WooCommerce API
+  description: API for the WooCommerce ecommerce platform integration - handles product stock management with variations support
+  version: 1.0.0
+  contact:
+    name: WooCommerce Integration Team
+    email: integration@greenvase.es
+
+servers:
+  - url: https://greenvase.es/wp-json/wc/v3
+    description: Production WooCommerce API server
+  - url: https://staging.greenvase.es/wp-json/wc/v3
+    description: Staging WooCommerce API server
+
+paths:
+  /products:
+    get:
+      summary: List products in WooCommerce
+      description: Retrieve a paginated list of all products currently in WooCommerce
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          description: Number of products per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: status
+          in: query
+          description: Filter by product status
+          required: false
+          schema:
+            type: string
+            enum: [any, draft, pending, private, publish]
+        - name: search
+          in: query
+          description: Search products by name or SKU
+          required: false
+          schema:
+            type: string
+        - name: orderby
+          in: query
+          description: Sort collection by object attribute
+          required: false
+          schema:
+            type: string
+            enum: [date, id, include, title, slug, price, popularity, rating]
+            default: date
+        - name: order
+          in: query
+          description: Order sort attribute ascending or descending
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WooCommerceProduct'
+
+  /products/{id}/stock:
+    post:
+      summary: Update stock using WooCommerce's stock management
+      description: Update stock for a product using WooCommerce's built-in stock management system
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: WooCommerce product ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockManagementUpdate'
+      responses:
+        '200':
+          description: Stock updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockManagementResponse'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /products/{id}/manage-stock:
+    put:
+      summary: Enable/disable stock management for a product
+      description: Enable or disable stock management for a specific product in WooCommerce
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: WooCommerce product ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManageStockUpdate'
+      responses:
+        '200':
+          description: Stock management updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManageStockResponse'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /products/bulk-stock:
+    post:
+      summary: Bulk update stock for multiple products
+      description: Update stock for multiple products in a single request for better performance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkStockUpdate'
+      responses:
+        '200':
+          description: Bulk update completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkStockResponse'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /products/{id}/variations:
+    get:
+      summary: Get product variations
+      description: Retrieve all variations for a variable product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: WooCommerce product ID
+          schema:
+            type: integer
+        - name: page
+          in: query
+          description: Page number for pagination
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          description: Number of variations per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: List of product variations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductVariation'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /products/{id}/variations/{variationId}/stock:
+    put:
+      summary: Update stock for specific variation
+      description: Update stock for a specific product variation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: WooCommerce product ID
+          schema:
+            type: integer
+        - name: variationId
+          in: path
+          required: true
+          description: WooCommerce variation ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VariationStockUpdate'
+      responses:
+        '200':
+          description: Variation stock updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariationStockResponse'
+        '404':
+          description: Product or variation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    WooCommerceProduct:
+      type: object
+      required:
+        - id
+        - name
+        - type
+        - status
+        - stock_quantity
+        - price
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: integer
+          description: WooCommerce product ID
+        name:
+          type: string
+          description: Product name
+        type:
+          type: string
+          enum: [simple, grouped, external, variable]
+          description: Product type
+        status:
+          type: string
+          enum: [draft, pending, private, publish]
+          description: Product status
+        sku:
+          type: string
+          description: Product SKU
+        stock_quantity:
+          type: integer
+          nullable: true
+          description: Stock quantity
+        price:
+          type: string
+          description: Product price
+        regular_price:
+          type: string
+          description: Regular price
+        sale_price:
+          type: string
+          description: Sale price
+        description:
+          type: string
+          description: Product description
+        short_description:
+          type: string
+          description: Product short description
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductCategory'
+          description: Product categories
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductImage'
+          description: Product images
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductAttribute'
+          description: Product attributes
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ProductVariation:
+      type: object
+      required:
+        - id
+        - sku
+        - stock_quantity
+        - price
+      properties:
+        id:
+          type: integer
+          description: Variation ID
+        sku:
+          type: string
+          description: Variation SKU
+        stock_quantity:
+          type: integer
+          nullable: true
+          description: Stock quantity
+        price:
+          type: string
+          description: Variation price
+        regular_price:
+          type: string
+          description: Regular price
+        sale_price:
+          type: string
+          description: Sale price
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariationAttribute'
+          description: Variation attributes
+        image:
+          $ref: '#/components/schemas/ProductImage'
+          description: Variation image
+
+    StockManagementUpdate:
+      type: object
+      required:
+        - stock_quantity
+      properties:
+        stock_quantity:
+          type: integer
+          minimum: 0
+          description: New stock quantity
+
+
+    StockManagementResponse:
+      type: object
+      required:
+        - product_id
+        - stock_quantity
+        - updated_at
+      properties:
+        product_id:
+          type: integer
+          description: WooCommerce product ID
+        stock_quantity:
+          type: integer
+          description: Updated stock quantity
+        updated_at:
+          type: string
+          format: date-time
+          description: Update timestamp
+
+    ManageStockUpdate:
+      type: object
+      required:
+        - stock_quantity
+      properties:
+        stock_quantity:
+          type: integer
+          minimum: 0
+          description: Stock quantity
+
+    ManageStockResponse:
+      type: object
+      required:
+        - product_id
+        - stock_quantity
+        - updated_at
+      properties:
+        product_id:
+          type: integer
+          description: WooCommerce product ID
+        stock_quantity:
+          type: integer
+          description: Current stock quantity
+        updated_at:
+          type: string
+          format: date-time
+          description: Update timestamp
+
+    BulkStockUpdate:
+      type: object
+      required:
+        - updates
+      properties:
+        updates:
+          type: array
+          items:
+            type: object
+            required:
+              - product_id
+              - stock_quantity
+            properties:
+              product_id:
+                type: integer
+                description: WooCommerce product ID
+              stock_quantity:
+                type: integer
+                minimum: 0
+                description: New stock quantity
+
+    BulkStockResponse:
+      type: object
+      required:
+        - processed
+        - successful
+        - failed
+      properties:
+        processed:
+          type: integer
+          description: Total number of updates processed
+        successful:
+          type: integer
+          description: Number of successful updates
+        failed:
+          type: integer
+          description: Number of failed updates
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              product_id:
+                type: integer
+              success:
+                type: boolean
+              error:
+                type: string
+                description: Error message if failed
+
+    VariationStockUpdate:
+      type: object
+      required:
+        - stock_quantity
+      properties:
+        stock_quantity:
+          type: integer
+          minimum: 0
+          description: New stock quantity for variation
+
+    VariationStockResponse:
+      type: object
+      required:
+        - variation_id
+        - stock_quantity
+        - updated_at
+      properties:
+        variation_id:
+          type: integer
+          description: WooCommerce variation ID
+        stock_quantity:
+          type: integer
+          description: Updated stock quantity
+        updated_at:
+          type: string
+          format: date-time
+          description: Update timestamp
+
+    ProductCategory:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          description: Category ID
+        name:
+          type: string
+          description: Category name
+        slug:
+          type: string
+          description: Category slug
+
+    ProductImage:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Image ID
+        src:
+          type: string
+          format: uri
+          description: Image URL
+        name:
+          type: string
+          description: Image name
+        alt:
+          type: string
+          description: Image alt text
+
+    ProductAttribute:
+      type: object
+      required:
+        - id
+        - name
+        - options
+      properties:
+        id:
+          type: integer
+          description: Attribute ID
+        name:
+          type: string
+          description: Attribute name
+        options:
+          type: array
+          items:
+            type: string
+          description: Attribute options
+        visible:
+          type: boolean
+          description: Whether attribute is visible
+        variation:
+          type: boolean
+          description: Whether attribute is used for variations
+
+    VariationAttribute:
+      type: object
+      required:
+        - id
+        - name
+        - option
+      properties:
+        id:
+          type: integer
+          description: Attribute ID
+        name:
+          type: string
+          description: Attribute name
+        option:
+          type: string
+          description: Selected option value
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Error message
+        data:
+          type: object
+          additionalProperties: true
+          description: Additional error data

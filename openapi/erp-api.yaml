@@ -1,0 +1,317 @@
+openapi: 3.0.3
+info:
+  title: ERP System API
+  description: API for the internal ERP system that manages product inventory and stock data
+  version: 1.0.0
+  contact:
+    name: Greenvase Development Team
+    email: dev@greenvase.es
+
+servers:
+  - url: https://erp.greenvase.es/api/v1
+    description: Production ERP server
+  - url: https://erp-staging.greenvase.es/api/v1
+    description: Staging ERP server
+
+paths:
+  /products:
+    get:
+      summary: List all products
+      description: Retrieve a paginated list of all products from the ERP system
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          description: Number of products per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+        - name: category
+          in: query
+          description: Filter by category ID
+          required: false
+          schema:
+            type: integer
+        - name: search
+          in: query
+          description: Search products by name or SKU
+          required: false
+          schema:
+            type: string
+        - name: order_by
+          in: query
+          description: Order results by field
+          required: false
+          schema:
+            type: string
+            enum: [id, last_updated_at, created_at, name, updated_at]
+            default: id
+        - name: order_direction
+          in: query
+          description: Order direction
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+        - name: updated_after
+          in: query
+          description: Filter products updated after this date
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: updated_before
+          in: query
+          description: Filter products updated before this date
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  total:
+                    type: integer
+                    description: Total number of products
+
+  /products/{id}:
+    get:
+      summary: Get product by ID
+      description: Retrieve detailed information about a specific product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Product ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Product:
+      type: object
+      required:
+        - id
+        - name
+        - sku
+        - price
+        - category_id
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: integer
+          description: Unique product identifier
+          example: 1001
+        name:
+          type: string
+          description: Product name
+          example: "Bandeja de aluminio"
+        sku:
+          type: string
+          description: Stock Keeping Unit
+          example: "BAN-ALU-001"
+        description:
+          type: string
+          description: Product description
+          example: "Bandeja de aluminio resistente para uso profesional en cocina"
+        price:
+          type: number
+          format: float
+          description: Product price
+          example: 24.99
+        category_id:
+          type: integer
+          description: Category ID
+          example: 15
+        weight:
+          type: number
+          format: float
+          description: Product weight in kg
+          example: 0.5
+        dimensions:
+          $ref: '#/components/schemas/Dimensions'
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: Product image URLs
+          example: ["https://images.greenvase.es/products/bandeja-aluminio-1.jpg", "https://images.greenvase.es/products/bandeja-aluminio-2.jpg"]
+        attributes:
+          type: object
+          additionalProperties: true
+          description: Additional product attributes
+          example: {"material": "aluminio", "color": "plateado", "capacidad": "5L"}
+        stock:
+          $ref: '#/components/schemas/StockInfo'
+          description: Current stock information for the product
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-20T14:45:00Z"
+
+    Category:
+      type: object
+      required:
+        - id
+        - name
+        - parent_id
+      properties:
+        id:
+          type: integer
+          description: Category ID
+          example: 15
+        name:
+          type: string
+          description: Category name
+          example: "Utensilios de cocina"
+        parent_id:
+          type: integer
+          nullable: true
+          description: Parent category ID (null for root categories)
+          example: null
+        description:
+          type: string
+          description: Category description
+          example: "Utensilios y herramientas para cocina profesional"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T12:00:00Z"
+
+    StockInfo:
+      type: object
+      required:
+        - product_id
+        - quantity
+        - reserved_quantity
+        - last_updated
+      properties:
+        product_id:
+          type: integer
+          description: Product ID
+          example: 1001
+        quantity:
+          type: integer
+          description: Available stock quantity
+          example: 150
+        reserved_quantity:
+          type: integer
+          description: Reserved stock quantity
+          example: 25
+        available_quantity:
+          type: integer
+          description: Available quantity (quantity - reserved_quantity)
+          example: 125
+        warehouse_id:
+          type: integer
+          description: Warehouse ID
+          example: 1
+        last_updated:
+          type: string
+          format: date-time
+          description: Last stock update timestamp
+          example: "2024-01-20T16:30:00Z"
+
+    Dimensions:
+      type: object
+      properties:
+        length:
+          type: number
+          format: float
+          description: Length in cm
+          example: 30.5
+        width:
+          type: number
+          format: float
+          description: Width in cm
+          example: 20.0
+        height:
+          type: number
+          format: float
+          description: Height in cm
+          example: 3.0
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page number
+          example: 1
+        limit:
+          type: integer
+          description: Items per page
+          example: 100
+        total_pages:
+          type: integer
+          description: Total number of pages
+          example: 5
+        total_items:
+          type: integer
+          description: Total number of items
+          example: 450
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: "PRODUCT_NOT_FOUND"
+        message:
+          type: string
+          description: Error message
+          example: "Product with ID 1001 was not found"
+        details:
+          type: object
+          additionalProperties: true
+          description: Additional error details
+          example: {"requested_id": 1001, "available_ids": [1002, 1003, 1004]}
